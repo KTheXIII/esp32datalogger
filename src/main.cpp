@@ -66,6 +66,16 @@ void sendMessage() {
   }
 }
 
+void errors() {
+  if (errcounter > 100) {
+    Serial.print("error counter exceeded, will try again in ");
+    Serial.print(ERROR_SLEEP);
+    Serial.println("s");
+    esp_sleep_enable_timer_wakeup(ERROR_SLEEP * uS_TO_S_FACTOR);
+    esp_deep_sleep_start();
+  }
+}
+
 void setup() {
   Serial.begin(115200);
   thSensor.Begin();
@@ -79,6 +89,8 @@ void setup() {
   while (WiFi.status() != WL_CONNECTED) { // Check for the connection
     delay(250);
     Serial.print(".");
+    errcounter++;
+    errors();
   }
   Serial.println();
   Serial.println("Connected to the WiFi network");
@@ -102,11 +114,5 @@ void loop() {
     errcounter++;
   }
 
-  if (errcounter > 100) {
-    Serial.print("error counter exceeded, will try again in ");
-    Serial.print(ERROR_SLEEP);
-    Serial.println("s");
-    esp_sleep_enable_timer_wakeup(ERROR_SLEEP * uS_TO_S_FACTOR);
-    esp_deep_sleep_start();
-  }
+  errors();
 }
